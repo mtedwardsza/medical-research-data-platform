@@ -14,7 +14,7 @@
 
 This project simulates a real-world challenge in healthcare ICT: **migrating legacy clinical research data** from inconsistent, messy CSV exports into a centralised, queryable PostgreSQL database — then surfacing insights through an interactive analytics dashboard.
 
-It was built to demonstrate Business Analyst skills in a medical research environment, covering: data analysis, ETL pipeline design, database modelling, API development, and stakeholder-facing documentation.
+It was built to demonstrate Business Analyst technical skills in ICT environment, covering: data analysis, ETL pipeline design, database modelling, API development, and stakeholder-facing documentation.
 
 ---
 
@@ -126,7 +126,7 @@ Open your browser at `http://localhost:5000`
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin | `admin` | `perkins2024` |
+| Admin | `admin` | `admin2026` |
 | Viewer | `viewer` | `viewer123` |
 
 ---
