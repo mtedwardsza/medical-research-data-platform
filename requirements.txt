@@ -1,0 +1,27 @@
+# ================================================================
+# requirements.txt — Medical Research Data Migration Platform
+# ================================================================
+# This file lists all Python packages needed to run the project.
+# Install everything with: pip install -r requirements.txt
+# ================================================================
+
+# --- Data generation -----------------------------------------
+faker==24.2.0          # Generates realistic fake data (names, dates, emails)
+numpy==1.26.4          # Numerical operations and random number generation
+
+# --- Data cleaning (ETL) -------------------------------------
+pandas==2.2.1          # The core library for data manipulation and analysis
+
+# --- Database ------------------------------------------------
+sqlalchemy==2.0.29     # ORM — defines database tables as Python classes
+psycopg2-binary==2.9.9 # PostgreSQL driver — lets Python talk to PostgreSQL
+
+# --- Web API -------------------------------------------------
+flask==3.0.2           # Lightweight web framework for the REST API
+flask-session==0.8.0   # Manages user sessions (login/logout)
+
+# --- Environment variables -----------------------------------
+python-dotenv==1.0.1   # Reads .env file so we don't hardcode passwords
+
+# --- Testing (QA) --------------------------------------------
+pytest==8.1.1          # Testing framework — runs all tests in tests/ folder
