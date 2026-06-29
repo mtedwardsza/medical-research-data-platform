@@ -1,0 +1,77 @@
+# docker-compose.yml
+# ==================
+# Spins up a PostgreSQL database and the Python app in Docker containers.
+#
+# WHY DOCKER:
+#   Without Docker, every developer needs to manually install PostgreSQL,
+#   create a database, configure passwords, etc. With Docker, one command
+#   (`docker compose up`) does everything automatically — same result on
+#   every machine, every time.
+#
+# HOW TO USE:
+#   1. Copy .env.example to .env and fill in your values
+#   2. Run: docker compose up -d
+#   3. Database is available at localhost:5432
+#   4. Stop with: docker compose down
+#   5. Stop and delete all data: docker compose down -v
+#
+# SERVICES:
+#   db  — PostgreSQL 15 database
+#   app — Python ETL + API application
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine          # Alpine = smaller image, faster download
+    container_name: research_db
+    restart: unless-stopped            # Auto-restart if it crashes
+
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"  # Expose to host so you can use pgAdmin/DBeaver
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data between restarts
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Python Application ───────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: research_app
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      FLASK_ENV:    ${FLASK_ENV:-production}
+      SECRET_KEY:   ${SECRET_KEY}
+
+    ports:
+      - "${APP_PORT:-5000}:5000"       # Flask API available at localhost:5000
+
+    volumes:
+      - ./Data:/app/Data               # Mount local Data/ folder into container
+
+    depends_on:
+      db:
+        condition: service_healthy     # Wait until PostgreSQL is ready before starting
+
+    command: python app.py             # Entry point
+
+# ── Named Volumes ────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
