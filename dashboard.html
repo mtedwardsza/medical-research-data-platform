@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medical Research Data Platform — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    /* ─── Perkins Brand Palette ──────────────────────────────────────────────
+       Primary:   Deep Purple  #5B2D8E  (Perkins signature colour)
+       Secondary: Teal         #00838F  (research / science accent)
+       Dark:      Navy         #1B2A4A  (headers, text)
+       Neutrals:  slate greys
+       Status:    green / amber / red — used sparingly only for status pills
+    ──────────────────────────────────────────────────────────────────────── */
+
+    [data-theme="light"] {
+      --bg:       #F5F4F8;
+      --surface:  #FFFFFF;
+      --border:   #E4E1ED;
+      --text:     #1B1B2E;
+      --muted:    #6B6880;
+      --prog-bg:  #EDE9F5;
+      --metric:   #F8F6FB;
+      --shadow:   0 1px 3px rgba(91,45,142,.07), 0 4px 16px rgba(91,45,142,.07);
+    }
+    [data-theme="dark"] {
+      --bg:       #12101A;
+      --surface:  #1E1A2B;
+      --border:   #2E2940;
+      --text:     #EDE9F5;
+      --muted:    #9C97B0;
+      --prog-bg:  #2E2940;
+      --metric:   #12101A;
+      --shadow:   0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    }
+
+    /* Brand tokens */
+    :root {
+      --purple:  #5B2D8E;   /* Perkins primary */
+      --purple-l:#7B4DB8;   /* lighter purple */
+      --purple-d:#3D1A6E;   /* darker purple */
+      --teal:    #00838F;   /* Perkins secondary */
+      --teal-l:  #26A69A;   /* lighter teal */
+      --navy:    #1B2A4A;   /* dark navy */
+      --lavender:#9B72CF;   /* chart shade 3 */
+      --mint:    #4DB6AC;   /* chart shade 4 */
+      --plum:    #8E4585;   /* chart shade 5 */
+      --sea:     #006064;   /* chart shade 6 */
+      --g-ok:    #2E7D32;   /* status green */
+      --g-warn:  #E65100;   /* status amber */
+      --g-err:   #B71C1C;   /* status red */
+      --radius:  12px;
+    }
+
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background .25s,color .25s; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--purple-d) 0%, var(--purple) 60%, var(--teal) 100%);
+      color:#fff; padding:0 32px; height:64px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+      box-shadow:0 2px 12px rgba(91,45,142,.35);
+    }
+    .header-left { display:flex; align-items:center; gap:14px; }
+    .logo { width:36px; height:36px; background:rgba(255,255,255,.18); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    header h1 { font-size:16px; font-weight:600; }
+    header p  { font-size:12px; opacity:.7; }
+    .header-right { display:flex; align-items:center; gap:12px; }
+    .badge { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:500; }
+    .status-dot { width:8px; height:8px; background:#69F0AE; border-radius:50%; display:inline-block; margin-right:5px; box-shadow:0 0 6px #69F0AE; }
+    .theme-toggle { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:20px; padding:5px 14px; color:#fff; font-size:12px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px; transition:background .2s; }
+    .theme-toggle:hover { background:rgba(255,255,255,.25); }
+
+    /* ── Layout ── */
+    main { padding:28px 32px; max-width:1600px; margin:0 auto; }
+    section { margin-bottom:28px; }
+    .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--purple); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── KPI cards ── */
+    .kpi-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:16px; }
+    .kpi { background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); border-top:3px solid var(--purple); transition:transform .15s, box-shadow .15s; }
+    .kpi:nth-child(4),.kpi:nth-child(5),.kpi:nth-child(6) { border-top-color:var(--teal); }
+    .kpi:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(91,45,142,.15); }
+    .kpi-icon { font-size:20px; width:40px; height:40px; background:#F0EBF8; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+    .kpi:nth-child(4) .kpi-icon,.kpi:nth-child(5) .kpi-icon,.kpi:nth-child(6) .kpi-icon { background:#E0F4F5; }
+    .kpi-value { font-size:28px; font-weight:700; line-height:1; color:var(--purple); }
+    .kpi:nth-child(4) .kpi-value,.kpi:nth-child(5) .kpi-value,.kpi:nth-child(6) .kpi-value { color:var(--teal); }
+    .kpi-label { font-size:12px; color:var(--muted); margin-top:4px; font-weight:500; }
+    .kpi-sub   { font-size:11px; color:var(--muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border); }
+
+    /* ── Cards ── */
+    .card { background:var(--surface); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); transition:background .25s; }
+    .card-title { font-size:14px; font-weight:600; margin-bottom:3px; }
+    .card-sub   { font-size:12px; color:var(--muted); margin-bottom:18px; }
+
+    /* ── Grid helpers ── */
+    .g3  { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .g2  { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    .g21 { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+    .g4  { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+    canvas { max-height:260px; }
+    .h-sm canvas { max-height:190px; }
+    .h-lg canvas { max-height:310px; }
+
+    /* ── Progress bars ── */
+    .prog-row { margin-bottom:13px; }
+    .prog-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; }
+    .prog-label span:last-child { color:var(--muted); }
+    .prog-bar  { height:7px; background:var(--prog-bg); border-radius:99px; overflow:hidden; }
+    .prog-fill { height:100%; border-radius:99px; }
+
+    /* ── Metric boxes ── */
+    .metric-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+    .metric-box { flex:1; min-width:80px; background:var(--metric); border-radius:8px; padding:12px 10px; text-align:center; }
+    .metric-box .val { font-size:20px; font-weight:700; }
+    .metric-box .lbl { font-size:10px; color:var(--muted); margin-top:2px; }
+
+    /* ── Table ── */
+    .stats-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .stats-table th { text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); padding:8px 12px; border-bottom:2px solid var(--border); }
+    .stats-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
+    .stats-table tr:last-child td { border-bottom:none; }
+    .stats-table tr:hover td { background:var(--metric); }
+    .pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .pill-active     { background:#E8F5E9; color:#2E7D32; }
+    .pill-recruiting { background:#EDE7F6; color:#5B2D8E; }
+    .pill-paused     { background:#FFF3E0; color:#E65100; }
+    .pill-completed  { background:#E0F4F5; color:#00838F; }
+    .pill-terminated { background:#FFEBEE; color:#B71C1C; }
+
+    footer { text-align:center; font-size:12px; color:var(--muted); padding:24px 32px; border-top:1px solid var(--border); }
+    footer a { color:var(--purple); }
+
+    @media(max-width:1200px){ .kpi-grid{grid-template-columns:repeat(3,1fr);} .g3{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:768px){ main{padding:16px;} .kpi-grid,.g2,.g3,.g21,.g4{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">🧬</div>
+    <div>
+      <h1>Medical Research Data Platform</h1>
+      <p>Harry Perkins Institute of Medical Research · Perth, WA</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span style="font-size:13px"><span class="status-dot"></span>Live Data</span>
+    <span class="badge">Sprint 1 — July 2026</span>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+  </div>
+</header>
+
+<main>
+
+<!-- KPI -->
+<section>
+  <div class="section-title">Platform Overview</div>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon">👩‍🔬</div>
+      <div class="kpi-value">500</div>
+      <div class="kpi-label">Researchers</div>
+      <div class="kpi-sub"><span style="color:var(--g-ok);font-weight:600">437</span> active · <span style="color:var(--g-err);font-weight:600">63</span> inactive</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">🔬</div>
+      <div class="kpi-value">200</div>
+      <div class="kpi-label">Clinical Studies</div>
+      <div class="kpi-sub"><span style="color:var(--g-ok);font-weight:600">32</span> active · <span style="font-weight:600">46</span> recruiting</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">🧑‍⚕️</div>
+      <div class="kpi-value">3,000</div>
+      <div class="kpi-label">Participants</div>
+      <div class="kpi-sub"><span style="color:var(--g-err);font-weight:600">250</span> withdrawn · avg age <span style="font-weight:600">52.1</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-value">5,000</div>
+      <div class="kpi-label">Clinical Outcomes</div>
+      <div class="kpi-sub"><span style="color:var(--g-ok);font-weight:600">3,514</span> normal · <span style="color:var(--g-err);font-weight:600">1,486</span> abnormal</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">🧪</div>
+      <div class="kpi-value">3,500</div>
+      <div class="kpi-label">Biosamples</div>
+      <div class="kpi-sub"><span style="color:var(--g-ok);font-weight:600">3,155</span> viable · avg cost <span style="font-weight:600">$422</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-value">$184M</div>
+      <div class="kpi-label">Total Budget (AUD)</div>
+      <div class="kpi-sub">Across <span style="font-weight:600">200</span> studies · all phases</div>
+    </div>
+  </div>
+</section>
+
+<!-- STUDIES -->
+<section>
+  <div class="section-title">Study Portfolio</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">Studies by Status</div>
+      <div class="card-sub">Current operational state across all 200 studies</div>
+      <canvas id="studiesStatus"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Studies by Phase</div>
+      <div class="card-sub">Clinical trial phase distribution</div>
+      <canvas id="studiesPhase"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Study Status Breakdown</div>
+      <div class="card-sub">Counts and proportions at a glance</div>
+      <div style="margin-top:8px">
+        <div class="prog-row"><div class="prog-label"><span>Recruiting</span><span>46 (23.0%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:23%;background:var(--purple)"></div></div></div>
+        <div class="prog-row"><div class="prog-label"><span>Paused</span><span>47 (23.5%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:23.5%;background:var(--lavender)"></div></div></div>
+        <div class="prog-row"><div class="prog-label"><span>Terminated</span><span>45 (22.5%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:22.5%;background:#9E9E9E"></div></div></div>
+        <div class="prog-row"><div class="prog-label"><span>Active</span><span>32 (16.0%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:16%;background:var(--teal)"></div></div></div>
+        <div class="prog-row"><div class="prog-label"><span>Completed</span><span>30 (15.0%)</span></div><div class="prog-bar"><div class="prog-fill" style="width:15%;background:var(--mint)"></div></div></div>
+        <div class="metric-row">
+          <div class="metric-box"><div class="val" style="color:var(--teal)">62</div><div class="lbl">Active + Recruiting</div></div>
+          <div class="metric-box"><div class="val" style="color:#9E9E9E">45</div><div class="lbl">Terminated</div></div>
+          <div class="metric-box"><div class="val" style="color:var(--mint)">30</div><div class="lbl">Completed</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCHERS -->
+<section>
+  <div class="section-title">Research Team</div>
+  <div class="g21">
+    <div class="card h-lg">
+      <div class="card-title">Researchers by Department</div>
+      <div class="card-sub">Headcount distribution across all 8 departments</div>
+      <canvas id="deptBar"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Researcher Status</div>
+      <div class="card-sub">Active vs inactive staff</div>
+      <div class="h-sm"><canvas id="researcherStatus"></canvas></div>
+      <div class="metric-row">
+        <div class="metric-box"><div class="val" style="color:var(--teal)">437</div><div class="lbl">Active</div></div>
+        <div class="metric-box"><div class="val" style="color:#9E9E9E">63</div><div class="lbl">Inactive</div></div>
+        <div class="metric-box"><div class="val" style="color:var(--purple)">87.4%</div><div class="lbl">Retention Rate</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTICIPANTS -->
+<section>
+  <div class="section-title">Participant Demographics</div>
+  <div class="g4">
+    <div class="card">
+      <div class="card-title">Gender Distribution</div>
+      <div class="card-sub">Across all enrolled participants</div>
+      <div class="h-sm"><canvas id="genderChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Enrolment Status</div>
+      <div class="card-sub">Active vs withdrawn</div>
+      <div class="h-sm"><canvas id="enrolmentStatus"></canvas></div>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <div class="card-title">Age Distribution</div>
+      <div class="card-sub">Participant age bands · Average age 52.1 years</div>
+      <canvas id="ageChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- CONDITIONS -->
+<section>
+  <div class="section-title">Primary Conditions & Clinical Outcomes</div>
+  <div class="g2">
+    <div class="card h-lg">
+      <div class="card-title">Top 8 Primary Conditions</div>
+      <div class="card-sub">Most prevalent conditions among enrolled participants</div>
+      <canvas id="conditionsChart"></canvas>
+    </div>
+    <div class="card h-lg">
+      <div class="card-title">Clinical Measurement Types</div>
+      <div class="card-sub">Distribution of 5,000 recorded outcomes</div>
+      <canvas id="measurementsChart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section>
+  <div class="section-title">Clinical Outcome Analysis</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">Normal vs Abnormal Readings</div>
+      <div class="card-sub">Outcomes within/outside clinical reference range</div>
+      <div class="h-sm"><canvas id="outcomeNormal"></canvas></div>
+      <div class="metric-row">
+        <div class="metric-box"><div class="val" style="color:var(--teal)">70.3%</div><div class="lbl">Within Range</div></div>
+        <div class="metric-box"><div class="val" style="color:var(--g-err)">29.7%</div><div class="lbl">Abnormal</div></div>
+      </div>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <div class="card-title">Outcomes per Measurement Type</div>
+      <div class="card-sub">Normal vs abnormal breakdown per clinical test</div>
+      <canvas id="outcomesBar"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- BIOSAMPLES -->
+<section>
+  <div class="section-title">Biobank & Sample Management</div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">Sample Types</div>
+      <div class="card-sub">Biological specimen categories in biobank</div>
+      <canvas id="sampleTypes"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Sample Status</div>
+      <div class="card-sub">Current processing/storage state</div>
+      <canvas id="sampleStatus"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Viability & Key Metrics</div>
+      <div class="card-sub">Quality indicators across 3,500 samples</div>
+      <div class="h-sm"><canvas id="viabilityChart"></canvas></div>
+      <div class="metric-row">
+        <div class="metric-box"><div class="val" style="color:var(--teal)">90.1%</div><div class="lbl">Viable</div></div>
+        <div class="metric-box"><div class="val" style="color:var(--purple)">$422</div><div class="lbl">Avg Cost</div></div>
+        <div class="metric-box"><div class="val" style="color:var(--purple)">7</div><div class="lbl">Sample Types</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE -->
+<section>
+  <div class="section-title">Platform Summary</div>
+  <div class="card">
+    <div class="card-title">Study Status Reference Table</div>
+    <div class="card-sub">All status categories with counts, proportions and recommended actions</div>
+    <table class="stats-table">
+      <thead>
+        <tr><th>Status</th><th>Studies</th><th>% of Total</th><th>Participants (est.)</th><th>Budget Range (AUD)</th><th>Action Required</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill pill-recruiting">Recruiting</span></td><td>46</td><td>23.0%</td><td>~690</td><td>$500K – $2.5M</td><td>Monitor enrolment targets</td></tr>
+        <tr><td><span class="pill pill-paused">Paused</span></td><td>47</td><td>23.5%</td><td>~705</td><td>$300K – $2M</td><td>Review pause reasons</td></tr>
+        <tr><td><span class="pill pill-terminated">Terminated</span></td><td>45</td><td>22.5%</td><td>~675</td><td>Closed</td><td>Archive & document</td></tr>
+        <tr><td><span class="pill pill-active">Active</span></td><td>32</td><td>16.0%</td><td>~480</td><td>$800K – $3M</td><td>Ongoing monitoring</td></tr>
+        <tr><td><span class="pill pill-completed">Completed</span></td><td>30</td><td>15.0%</td><td>~450</td><td>Finalised</td><td>Publish results</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Medical Research Data Platform · Sprint 1 · Harry Perkins Institute of Medical Research · Perth, WA
+  · Python · PostgreSQL · Flask · SQLAlchemy ·
+  <a href="https://github.com/mtedwardsza/medical-research-data-platform">github.com/mtedwardsza/medical-research-data-platform</a>
+</footer>
+
+<script>
+// ── Theme toggle ─────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙 Dark Mode' : '☀️ Light Mode';
+}
+
+// ── Register datalabels ───────────────────────────────────────────────────────
+Chart.register(ChartDataLabels);
+
+// ── Perkins brand palette ─────────────────────────────────────────────────────
+const P = '#5B2D8E';   // purple
+const PL = '#7B4DB8';  // purple light
+const PD = '#3D1A6E';  // purple dark
+const T  = '#00838F';  // teal
+const TL = '#26A69A';  // teal light
+const LV = '#9B72CF';  // lavender
+const MN = '#4DB6AC';  // mint
+const PM = '#8E4585';  // plum
+const SE = '#006064';  // sea
+
+// Chart palette — all from the purple/teal family, no random rainbow
+const CHART7  = [P, T, LV, TL, PL, MN, PD];     // 7 shades for biosamples
+const CHART4  = [P, T, LV, MN];                   // 4 shades
+const CHART8  = [P, PL, LV, T, TL, MN, PM, SE];  // 8 shades
+
+// ── Shared config helpers ─────────────────────────────────────────────────────
+const tickFont   = { family:'Inter', size:11 };
+const legendOpts = { labels:{ font:{ family:'Inter', size:11 }, boxWidth:12, padding:10 } };
+const gridOpts   = { color:'rgba(128,128,128,.1)' };
+
+const pctLabel = {
+  color:'#fff',
+  font:{ family:'Inter', size:11, weight:'700' },
+  formatter:(val, ctx) => {
+    const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+    const pct   = (val/total*100).toFixed(1);
+    return pct < 6 ? '' : pct + '%';
+  }
+};
+
+const barValPct = (total) => ({
+  anchor:'end', align:'end', offset:3,
+  color:'var(--muted)',
+  font:{ family:'Inter', size:10, weight:'600' },
+  formatter: v => v + '  (' + (v/total*100).toFixed(1) + '%)'
+});
+
+// ── 1. Studies by Status ──────────────────────────────────────────────────────
+new Chart('studiesStatus', {
+  type:'doughnut',
+  data:{
+    labels:['Paused','Recruiting','Terminated','Active','Completed'],
+    datasets:[{ data:[47,46,45,32,30],
+      backgroundColor:[LV, P, '#9E9E9E', T, MN],
+      borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'62%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 2. Studies by Phase ───────────────────────────────────────────────────────
+new Chart('studiesPhase', {
+  type:'doughnut',
+  data:{
+    labels:['Phase I','Phase IV','Phase II','Phase III'],
+    datasets:[{ data:[57,54,48,41],
+      backgroundColor:[P, T, LV, MN],
+      borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'62%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 3. Dept bar ───────────────────────────────────────────────────────────────
+new Chart('deptBar', {
+  type:'bar',
+  data:{
+    labels:['Clinical Trials','Epidemiology','Oncology','Biostatistics','Neuroscience','Immunology','Cardiology','Genomics'],
+    datasets:[{ label:'Researchers', data:[76,68,65,62,62,60,58,49],
+      backgroundColor: CHART8, borderRadius:6, borderSkipped:false }]
+  },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ right:140 } },
+    plugins:{ legend:{display:false},
+      datalabels:{ anchor:'end', align:'end', offset:6, clip:false,
+        color:P, font:{family:'Inter',size:10,weight:'700'},
+        formatter: v => v + '  (' + (v/500*100).toFixed(1)+'%)' } },
+    scales:{
+      x:{ grid:gridOpts, ticks:{font:tickFont}, min:0, max:85 },
+      y:{ grid:{display:false}, ticks:{font:tickFont, padding:6},
+          afterFit: axis => { axis.width = 120; } } } }
+});
+
+// ── 4. Researcher status ──────────────────────────────────────────────────────
+new Chart('researcherStatus', {
+  type:'doughnut',
+  data:{
+    labels:['Active','Inactive'],
+    datasets:[{ data:[437,63], backgroundColor:[T,'#E0E0E0'], borderWidth:2, borderColor:'#fff' }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'68%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 5. Gender ─────────────────────────────────────────────────────────────────
+new Chart('genderChart', {
+  type:'doughnut',
+  data:{
+    labels:['Female','Male','Non-binary'],
+    datasets:[{ data:[984,957,924], backgroundColor:[P, T, LV], borderWidth:2, borderColor:'#fff', hoverOffset:5 }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'62%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 6. Enrolment status ───────────────────────────────────────────────────────
+new Chart('enrolmentStatus', {
+  type:'doughnut',
+  data:{
+    labels:['Active','Withdrawn'],
+    datasets:[{ data:[2750,250], backgroundColor:[T,'#E0E0E0'], borderWidth:2, borderColor:'#fff' }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'62%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 7. Age distribution ───────────────────────────────────────────────────────
+new Chart('ageChart', {
+  type:'bar',
+  data:{
+    labels:['Under 20','20–30','30–40','40–50','50–60','60–70','70–80','80+'],
+    datasets:[{ label:'Participants', data:[118,397,427,395,416,454,436,205],
+      backgroundColor: [SE, T, TL, MN, LV, PL, P, PD],
+      borderRadius:6, borderSkipped:false }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:28 } },
+    plugins:{ legend:{display:false}, datalabels: barValPct(3000) },
+    scales:{ x:{grid:{display:false}, ticks:{font:tickFont}},
+             y:{grid:gridOpts, ticks:{font:tickFont}} } }
+});
+
+// ── 8. Conditions ─────────────────────────────────────────────────────────────
+new Chart('conditionsChart', {
+  type:'bar',
+  data:{
+    labels:["Parkinson's",'Lung Cancer','Type 2 Diabetes','Melanoma','Obesity','Cardiovascular','Depression','Breast Cancer'],
+    datasets:[{ label:'Participants', data:[303,284,282,280,274,272,268,266],
+      backgroundColor: CHART8, borderRadius:6, borderSkipped:false }]
+  },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ right:140 } },
+    plugins:{ legend:{display:false},
+      datalabels:{ anchor:'end', align:'end', offset:6, clip:false,
+        color:'var(--muted)', font:{family:'Inter',size:10,weight:'600'},
+        formatter: v => v + '  (' + (v/3000*100).toFixed(1)+'%)' } },
+    scales:{
+      x:{ grid:gridOpts, ticks:{font:tickFont}, min:240, max:320 },
+      y:{ grid:{display:false}, ticks:{font:tickFont, padding:6},
+          afterFit: axis => { axis.width = 125; } } } }
+});
+
+// ── 9. Measurement types ──────────────────────────────────────────────────────
+new Chart('measurementsChart', {
+  type:'bar',
+  data:{
+    labels:['BMI','Blood Glucose','Cholesterol LDL','BP Diastolic','Cognitive Score','BP Systolic','PSA Level','Tumour Size'],
+    datasets:[{ label:'Outcomes', data:[470,467,465,464,460,458,458,451],
+      backgroundColor: CHART8, borderRadius:6, borderSkipped:false }]
+  },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ right:140 } },
+    plugins:{ legend:{display:false},
+      datalabels:{ anchor:'end', align:'end', offset:6, clip:false,
+        color:'var(--muted)', font:{family:'Inter',size:10,weight:'600'},
+        formatter: v => v + '  (' + (v/5000*100).toFixed(1)+'%)' } },
+    scales:{
+      x:{ grid:gridOpts, ticks:{font:tickFont}, min:430, max:490 },
+      y:{ grid:{display:false}, ticks:{font:tickFont, padding:6},
+          afterFit: axis => { axis.width = 125; } } } }
+});
+
+// ── 10. Normal vs abnormal ────────────────────────────────────────────────────
+new Chart('outcomeNormal', {
+  type:'doughnut',
+  data:{
+    labels:['Within Normal Range','Abnormal'],
+    datasets:[{ data:[3514,1486], backgroundColor:[T, LV], borderWidth:2, borderColor:'#fff', hoverOffset:5 }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'62%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 11. Outcomes grouped bar ──────────────────────────────────────────────────
+new Chart('outcomesBar', {
+  type:'bar',
+  data:{
+    labels:['BMI','Blood Glucose','Cholesterol LDL','BP Diastolic','Cognitive Score','BP Systolic','PSA Level','Tumour Size'],
+    datasets:[
+      { label:'Normal',   data:[330,328,326,325,323,321,321,316], backgroundColor: T+'CC', borderRadius:4 },
+      { label:'Abnormal', data:[140,139,139,139,137,137,137,135], backgroundColor: LV+'CC', borderRadius:4 }
+    ]
+  },
+  options:{ responsive:true, maintainAspectRatio:true,
+    plugins:{ legend:{...legendOpts}, datalabels:{display:false} },
+    scales:{ x:{grid:{display:false}, ticks:{font:tickFont}},
+             y:{grid:gridOpts, ticks:{font:tickFont}} } }
+});
+
+// ── 12. Sample types ──────────────────────────────────────────────────────────
+new Chart('sampleTypes', {
+  type:'doughnut',
+  data:{
+    labels:['Blood','Bone Marrow','Urine','Saliva','Stool','Tissue','CSF'],
+    datasets:[{ data:[534,508,507,497,489,487,478],
+      backgroundColor: CHART7, borderWidth:2, borderColor:'#fff', hoverOffset:5 }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'58%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+
+// ── 13. Sample status ─────────────────────────────────────────────────────────
+new Chart('sampleStatus', {
+  type:'bar',
+  data:{
+    labels:['Collected','Processing','Lost','Analysed','Stored','Destroyed'],
+    datasets:[{ label:'Biosamples', data:[620,594,589,568,566,563],
+      backgroundColor:[T, TL, LV, P, MN, '#9E9E9E'],
+      borderRadius:6, borderSkipped:false }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true,
+    layout:{ padding:{ top:28 } },
+    plugins:{ legend:{display:false}, datalabels: barValPct(3500) },
+    scales:{ x:{grid:{display:false}, ticks:{font:tickFont}},
+             y:{grid:gridOpts, ticks:{font:tickFont}} } }
+});
+
+// ── 14. Viability ─────────────────────────────────────────────────────────────
+new Chart('viabilityChart', {
+  type:'doughnut',
+  data:{
+    labels:['Viable','Not Viable'],
+    datasets:[{ data:[3155,345], backgroundColor:[T,'#E0E0E0'], borderWidth:2, borderColor:'#fff' }]
+  },
+  options:{ responsive:true, maintainAspectRatio:true, cutout:'65%',
+    plugins:{ legend:{...legendOpts, position:'bottom'}, datalabels: pctLabel } }
+});
+</script>
+</body>
+</html>
