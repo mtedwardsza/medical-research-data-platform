@@ -1,110 +1,204 @@
-# 🔬 Medical Research Data Migration Platform
+# 🧬 Medical Research Data Platform
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-2.3-green?logo=flask)](https://flask.palletsprojects.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)](https://postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://docker.com)
-[![Pandas](https://img.shields.io/badge/Pandas-2.0-150458?logo=pandas)](https://pandas.pydata.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.3-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
+[![Pandas](https://img.shields.io/badge/Pandas-2.0-150458?logo=pandas&logoColor=white)](https://pandas.pydata.org)
+[![pytest](https://img.shields.io/badge/pytest-46%20tests-0A9EDC?logo=pytest&logoColor=white)](tests/)
 
-> A Business Analyst portfolio project demonstrating end-to-end ownership of a clinical data migration — from raw legacy CSVs to a production-ready analytics dashboard.
-
----
-
-## 📋 Overview
-
-This project simulates a real-world challenge in healthcare ICT: **migrating legacy clinical research data** from inconsistent, messy CSV exports into a centralised, queryable PostgreSQL database — then surfacing insights through an interactive analytics dashboard.
-
-It was built to demonstrate Business Analyst technical skills in ICT environment, covering: data analysis, ETL pipeline design, database modelling, API development, and stakeholder-facing documentation.
+> **BA Portfolio Project** — End-to-end clinical data migration for the Harry Perkins Institute of Medical Research, Perth WA.
+> Demonstrating how a Business Analyst translates stakeholder needs into technical delivery: from requirements gathering and User Stories through ETL, database design, REST API, and an analytics dashboard.
 
 ---
 
-## 🏗️ Architecture — 8 Phases
+## 📊 Dashboard Preview
 
-**Phase 1 — Synthetic Data Generation** (`generate_data.py`)
-Creates 5 interconnected CSV files with ~12,200 records simulating a medical research institute. Data contains intentional quality issues to replicate real-world legacy exports.
+<!-- SCREENSHOT: Save a screenshot of dashboard.html as docs/dashboard-preview.png and it will appear here -->
+![Dashboard Preview](docs/dashboard-preview.png)
 
-**Phase 2 — ETL Cleaning Pipeline** (`process_data.py`)
-Extracts, transforms, and loads clean data into processed CSVs. Fixes date formats, currency strings, boolean chaos, duplicates, missing values, and invalid ranges. Logs before/after row counts.
-
-**Phase 3 — Relational Database Design** (`models/`)
-Five SQLAlchemy ORM models with proper foreign key relationships: Researcher → Study → Participant → Outcome → Biosample. Designed to reflect how a real research institute structures its data.
-
-**Phase 4 — Database Loading** (`load_data.py`)
-Bulk-inserts cleaned data into PostgreSQL respecting foreign key order. Handles constraint errors and logs insertion results per table.
-
-**Phase 5 — Containerisation** (`docker-compose.yml`)
-Docker Compose runs PostgreSQL in an isolated container — no local database install required. Consistent across all environments.
-
-**Phase 6 — REST API** (`app/routes.py`)
-8 endpoints expose the data programmatically: studies, participants, outcomes, biosamples, researchers, and a summary statistics endpoint for the dashboard.
-
-**Phase 7 — Authentication** (`app/auth.py`)
-Session-based login with two roles: Admin (full access) and Viewer (read-only dashboard).
-
-**Phase 8 — Analytics Dashboard** (`dashboard.html`)
-Interactive client-side dashboard with KPI cards, charts, searchable tables, and CSV export.
+> Open `dashboard.html` directly in any browser — no server required.
 
 ---
 
-## 📊 Dataset — Clinical Research Domain
+## 🎯 The BA Story — From Business Need to Technical Delivery
 
-| File | Records | Description |
-|------|---------|-------------|
-| `researchers.csv` | 500 | Research staff — departments, credentials, hire dates |
-| `studies.csv` | 200 | Clinical trials — Phase I–IV, status, principal researcher |
-| `participants.csv` | 3,000 | Study participants — demographics, enrolment dates |
-| `outcomes.csv` | 5,000 | Measured results per participant per study |
-| `biosamples.csv` | 3,500 | Biological samples — collection, lab results, status |
+This project simulates a real engagement at a medical research institute facing a common enterprise challenge: **legacy data trapped in inconsistent CSV exports**, with no way to query across studies, participants, and outcomes.
 
-### Data Quality Issues Introduced (simulating real-world legacy data)
+### Step 1 — Requirements Gathering
 
-| Issue | Example |
-|-------|---------|
-| Mixed date formats | `"2023-05-01"` / `"01/05/2023"` / `"May-01-2023"` |
-| Numeric values as strings | `"$2,450.00"` instead of `2450.0` |
-| Inconsistent casing | `"FEMALE"` / `"female"` / `"F"` → normalised to `"Female"` |
-| Missing values | Random nulls in critical fields |
-| Duplicate records | 40 duplicate participants, 60 duplicate outcomes |
-| Boolean chaos | `"Yes"/"No"/"Y"/"N"/"1"/"0"` — all meaning the same thing |
+The first step was to understand the business problem before writing a single line of code.
+
+| Business Need | Translated Requirement |
+|---|---|
+| *"We can't cross-reference participant outcomes with their study"* | Relational schema with FK: participants → studies |
+| *"Dates come from 3 different systems with different formats"* | ETL `parse_date()` handling ISO, AU and US formats |
+| *"We need different people to have different access levels"* | RBAC authentication: `admin` and `viewer` roles |
+| *"The research director wants a high-level view of the portfolio"* | `/api/summary` endpoint + KPI dashboard |
+| *"We can't trust the data — there are duplicates everywhere"* | Deduplication by primary key + null-drop on critical fields |
+
+### Step 2 — Agile Delivery with User Stories
+
+Requirements were broken down into **8 User Stories** managed on a GitHub Projects Kanban board across a 2-week Sprint.
+
+| # | User Story | Status |
+|---|---|---|
+| US-01 | As a data analyst, I need raw CSV data available in the repo | ✅ Done |
+| US-02 | As a data analyst, I need clean, standardised data for loading | ✅ Done |
+| US-03 | As a developer, I need a PostgreSQL schema with FK constraints | ✅ Done |
+| US-04 | As a consumer, I need a REST API to query the research data | ✅ Done |
+| US-05 | As the Research Director, I need a dashboard to view portfolio KPIs | ✅ Done |
+| US-06 | As an admin, I need role-based access to protect sensitive data | ✅ Done |
+| US-07 | As a new team member, I need documentation to understand the platform | ✅ Done |
+| US-08 | As a QA analyst, I need tests to verify ETL accuracy and API reliability | ✅ Done |
+
+Each US had **acceptance criteria**, **sub-tasks**, and was tracked from backlog → in progress → done.
+
+### Step 3 — Technical Delivery
+
+```
+Raw CSVs  →  ETL Pipeline  →  PostgreSQL  →  REST API  →  Dashboard
+(dirty)      (clean)          (structured)   (queryable)  (insights)
+```
 
 ---
 
-## 🛠️ Technology Stack
+## 🏗️ Architecture
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Data Generation | Python, Faker, NumPy | Creates realistic Australian-locale synthetic data |
-| ETL Pipeline | Python, Pandas | Industry-standard for data cleaning and transformation |
-| Database | PostgreSQL 15 | Robust relational database used widely in healthcare |
-| ORM | SQLAlchemy | Defines database tables as Python classes |
-| API | Flask | Lightweight REST framework for Python |
-| Containerisation | Docker, Docker Compose | Reproducible environment, no manual DB setup |
-| Analysis | Jupyter Notebooks | Data profiling and post-ETL verification |
-| Frontend | HTML, CSS, JavaScript | No framework needed for a focused dashboard |
+```
+medical-research-data-platform/
+│
+├── generate_data.py       ← Synthetic data generator (Faker, 12,200 records)
+├── process_data.py        ← ETL cleaning pipeline (Pandas)
+├── load_data.py           ← Bulk DB loader (FK-safe order)
+├── app.py                 ← Flask entry point
+├── dashboard.html         ← Analytics dashboard (Chart.js, standalone)
+│
+├── Data/
+│   ├── raw/               ← Original CSVs (preserved, never modified)
+│   └── processed/         ← Cleaned CSVs (output of ETL)
+│
+├── models/                ← SQLAlchemy ORM (5 entities)
+│   ├── researcher.py
+│   ├── study.py
+│   ├── participant.py
+│   ├── outcome.py
+│   └── biosample.py
+│
+├── app/
+│   ├── db.py              ← Database session & Base
+│   ├── routes.py          ← REST API endpoints
+│   └── auth.py            ← Session auth + RBAC decorators
+│
+├── templates/
+│   └── login.html         ← Perkins-branded login page
+│
+├── docs/
+│   ├── requirements_spec.md   ← Functional & non-functional requirements
+│   └── data_dictionary.md     ← All 5 tables, columns, types, business rules
+│
+└── tests/
+    ├── test_etl.py        ← 28 unit tests (ETL functions)
+    └── test_api.py        ← 18 integration tests (API endpoints)
+```
+
+---
+
+## 📋 Dataset
+
+| Entity | Raw Records | After ETL | Key Issues Fixed |
+|---|---|---|---|
+| Researchers | 520 | **500** | Duplicates removed |
+| Studies | 200 | **200** | Date formats, currency strings |
+| Participants | 3,040 | **3,000** | Duplicates, gender normalisation |
+| Outcomes | 5,060 | **5,000** | Duplicates, boolean chaos |
+| Biosamples | 3,500 | **3,500** | Currency parsing, boolean normalisation |
+
+### Data Quality Issues Handled
+
+| Problem | Example | Fix |
+|---|---|---|
+| 3 date formats | `"2024-08-31"` / `"07/09/2020"` / `"Jul-07-2022"` | `parse_date()` tries all 3 formats |
+| Currency as string | `"$793.00"` | `parse_currency()` strips `$` and `,` |
+| Boolean chaos | `"Yes"/"Y"/"1"/"TRUE"` | `parse_bool()` maps all → `True` |
+| Gender inconsistency | `"MALE"/"male"/"M"` | `normalise_gender()` → `"Male"` |
+| Duplicate rows | 40 duplicate participants | Deduplicate by primary key |
+| Critical nulls | Missing `study_id` on participant | Drop row, log warning |
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Database connectivity check |
+| GET | `/api/summary` | Platform-wide KPI statistics |
+| GET | `/api/researchers` | List researchers (`?department=`, `?is_active=`) |
+| GET | `/api/researchers/<id>` | Researcher detail + their studies |
+| GET | `/api/studies` | List studies (`?status=`, `?phase=`) |
+| GET | `/api/studies/<id>` | Study detail + researcher + participant count |
+| GET | `/api/participants` | List participants (`?study_id=`, `?gender=`) |
+| GET | `/api/participants/<id>` | Participant detail + outcome/biosample counts |
+| GET | `/api/outcomes` | List outcomes (`?participant_id=`, `?measurement_type=`) |
+| GET | `/api/biosamples` | List biosamples (`?sample_type=`, `?is_viable=`) |
+| POST | `/auth/login` | Authenticate (form or JSON) |
+| GET | `/auth/logout` | Clear session |
+| GET | `/auth/me` | Current user profile |
+
+---
+
+## 🧪 Testing & QA
+
+**46 automated tests** across unit and integration layers:
+
+```
+tests/
+├── test_etl.py    ← 28 unit tests   (ETL transformation functions)
+└── test_api.py    ← 18 integration tests (Flask endpoints + auth)
+```
+
+| Test Area | What's Verified |
+|---|---|
+| `parse_date` | All 3 date formats, nulls, invalid inputs |
+| `parse_bool` | All True/False variants (Yes/Y/1/TRUE...), nulls |
+| `parse_currency` | `$1,234.56` → `1234.56`, nulls, invalid strings |
+| `normalise_gender` | Male/MALE/M, Female/F, Non-binary/NB/Other |
+| API health check | Database connectivity |
+| Authentication | Login success, wrong password → 401, logout clears session |
+| All 5 entity endpoints | Status 200, valid JSON, correct fields |
+| Query filters | `?study_id=`, `?sample_type=` filter correctly |
+| 404 handling | Non-existent resources return 404 |
+
+```bash
+# Run tests
+pytest tests/ -v
+```
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|---|---|
+| [`docs/requirements_spec.md`](docs/requirements_spec.md) | Functional & non-functional requirements, stakeholders, delivery milestones |
+| [`docs/data_dictionary.md`](docs/data_dictionary.md) | All 5 tables with column definitions, types, constraints and business rules |
 
 ---
 
 ## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.10+
-- Docker Desktop
-- Git
-
-### Run the Project
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/mtedwardsza/medical-research-data-platform.git
 cd medical-research-data-platform
 
-# 2. Install Python dependencies
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Copy environment variables
+# 3. Set up environment variables
 cp .env.example .env
 
-# 4. Start PostgreSQL with Docker
+# 4. Start PostgreSQL
 docker-compose up -d
 
 # 5. Generate synthetic data
@@ -113,101 +207,47 @@ python generate_data.py
 # 6. Run ETL pipeline
 python process_data.py
 
-# 7. Load cleaned data into the database
+# 7. Load data into PostgreSQL
 python load_data.py
 
-# 8. Start the Flask application
+# 8. Start the API
 python app.py
 ```
 
-Open your browser at `http://localhost:5000`
-
 **Login credentials:**
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | `admin` | `admin2026` |
-| Viewer | `viewer` | `viewer123` |
+| Role | Username | Password | Access |
+|---|---|---|---|
+| Admin | `admin` | `perkins2026` | Full access |
+| Viewer | `viewer` | `research2026` | Read-only |
+
+> 💡 **Quick demo:** Open `dashboard.html` directly in a browser — no server needed.
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Tech Stack
 
-```
-medical-research-data-platform/
-│
-├── README.md               ← You are here
-├── requirements.txt        ← Python packages needed
-├── .gitignore              ← Files NOT tracked by Git
-├── .env.example            ← Environment variable template
-├── docker-compose.yml      ← PostgreSQL container setup
-├── Dockerfile              ← App container definition
-│
-├── generate_data.py        ← Phase 1: Synthetic data generator
-├── process_data.py         ← Phase 2: ETL cleaning pipeline
-├── load_data.py            ← Phase 4: Database loader
-├── app.py                  ← Flask entry point
-│
-├── Data/
-│   ├── raw/                ← Dirty CSVs (output of generate_data.py)
-│   └── processed/          ← Clean CSVs (output of process_data.py)
-│
-├── models/                 ← SQLAlchemy ORM table definitions
-│   ├── researcher.py
-│   ├── study.py
-│   ├── participant.py
-│   ├── outcome.py
-│   └── biosample.py
-│
-├── app/                    ← Flask application
-│   ├── routes.py           ← API endpoints
-│   ├── auth.py             ← Login and role management
-│   └── db.py               ← Database connection
-│
-├── docs/                   ← Business Analyst documentation
-│   ├── requirements_spec.md     ← Functional requirements & user stories
-│   └── data_dictionary.md       ← Field definitions & transformation rules
-│
-└── Notebooks/              ← Jupyter analysis notebooks
-    ├── 01_data_profiling.ipynb
-    └── 02_post_etl_verification.ipynb
-```
-
----
-
-## 📈 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/studies` | List all clinical studies |
-| GET | `/api/studies/<id>` | Get a single study with participants |
-| GET | `/api/participants` | List participants (filterable by study) |
-| GET | `/api/outcomes` | Query outcomes by study or participant |
-| GET | `/api/biosamples` | List biosamples with status filter |
-| GET | `/api/researchers` | List research staff |
-| GET | `/api/summary` | Dashboard KPI statistics |
-| POST | `/api/login` | Authenticate and create session |
-
----
-
-## 📚 Key Deliverables
-
-- ✅ 5 cleaned datasets ready for analysis (~12,200 records)
-- ✅ ETL pipeline with full logging and row-count validation
-- ✅ Normalised PostgreSQL schema with foreign key relationships
-- ✅ REST API with 8 endpoints and role-based authentication
-- ✅ Interactive analytics dashboard with CSV export
-- ✅ Containerised environment (Docker Compose)
-- ✅ BA documentation: requirements spec + data dictionary
+| Layer | Technology |
+|---|---|
+| ETL Pipeline | Python 3.10+, Pandas 2.0 |
+| Database | PostgreSQL 15, SQLAlchemy ORM |
+| API | Flask 2.3, session-based auth |
+| Containerisation | Docker, Docker Compose |
+| Dashboard | HTML, CSS, Chart.js |
+| Testing | pytest (46 tests) |
+| Project Management | GitHub Projects — Kanban + Roadmap |
 
 ---
 
 ## 👩‍💼 About
 
-Built by **Maria Trinidad Edwards** as a Business Analyst portfolio project — demonstrating data analysis, ETL pipeline design, requirements documentation, and ICT process improvement skills in a medical research context.
+Built by **Maria Trinidad Edwards** — Business Analyst with 5+ years experience across financial services and digital transformation.
+
+This project demonstrates end-to-end BA ownership: requirements elicitation, agile delivery with User Stories, technical analysis, SQL/database design, API development, and QA — in a medical research context relevant to Perth's health sector.
 
 📧 mtedwardsza@gmail.com
+🔗 [LinkedIn](https://www.linkedin.com/in/mtedwardsza)
 
 ---
 
-*Domain: Medical Research · Stack: Python · PostgreSQL · Flask · Docker*
+*Harry Perkins Institute of Medical Research · Perth, WA · Sprint 1 · July 2026*
