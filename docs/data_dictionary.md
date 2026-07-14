@@ -1,6 +1,6 @@
 # Data Dictionary
 ## Medical Research Data Platform
-**Harry Perkins Institute of Medical Research — Perth, WA**
+**Medical Research Data Platform — Perth, WA**
 
 | | |
 |---|---|
@@ -26,7 +26,7 @@ researchers
 
 ## Table: researchers
 
-Represents research staff members at the Harry Perkins Institute.
+Represents research staff members in the platform.
 One researcher can lead multiple studies.
 
 | Column | Type | Nullable | Unique | Description |

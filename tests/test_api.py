@@ -77,7 +77,7 @@ def app():
         first_name="Jane",
         last_name="Smith",
         department="Oncology",
-        email="j.smith@perkins.org.au",
+        email="j.smith@medresearch.org.au",
         is_active=True
     )
     study = Study(

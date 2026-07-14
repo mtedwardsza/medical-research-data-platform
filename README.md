@@ -7,7 +7,7 @@
 [![Pandas](https://img.shields.io/badge/Pandas-2.0-150458?logo=pandas&logoColor=white)](https://pandas.pydata.org)
 [![pytest](https://img.shields.io/badge/pytest-46%20tests-0A9EDC?logo=pytest&logoColor=white)](tests/)
 
-> **BA Portfolio Project** — End-to-end clinical data migration for the Harry Perkins Institute of Medical Research, Perth WA.
+> **BA Portfolio Project** — End-to-end clinical data platform for medical research — Perth, WA.
 > Demonstrating how a Business Analyst translates stakeholder needs into technical delivery: from requirements gathering and User Stories through ETL, database design, REST API, and an analytics dashboard.
 
 ---
@@ -91,7 +91,7 @@ medical-research-data-platform/
 │   └── auth.py            ← Session auth + RBAC decorators
 │
 ├── templates/
-│   └── login.html         ← Perkins-branded login page
+│   └── login.html         ← branded login page
 │
 ├── docs/
 │   ├── requirements_spec.md   ← Functional & non-functional requirements
@@ -218,7 +218,7 @@ python app.py
 
 | Role | Username | Password | Access |
 |---|---|---|---|
-| Admin | `admin` | `perkins2026` | Full access |
+| Admin | `admin` | `research2026` | Full access |
 | Viewer | `viewer` | `research2026` | Read-only |
 
 > 💡 **Quick demo:** Open `dashboard.html` directly in a browser — no server needed.
@@ -250,4 +250,4 @@ This project demonstrates end-to-end BA ownership: requirements elicitation, agi
 
 ---
 
-*Harry Perkins Institute of Medical Research · Perth, WA · Sprint 1 · July 2026*
+*Medical Research Data Platform · Perth, WA · Sprint 1 · July 2026*

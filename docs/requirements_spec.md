@@ -1,6 +1,6 @@
 # Requirements Specification
 ## Medical Research Data Platform
-**Harry Perkins Institute of Medical Research — Perth, WA**
+**Medical Research Data Platform — Perth, WA**
 
 | | |
 |---|---|
@@ -16,7 +16,7 @@
 
 ### 1.1 Background
 
-The Harry Perkins Institute of Medical Research manages clinical research data across multiple departments, studies, participants, and biosamples. Legacy data was stored in flat CSV files with inconsistent formats, no referential integrity, and no centralised access layer. This created significant manual effort for researchers and analysts trying to extract insights.
+The Medical Research Data Platform manages clinical research data across multiple departments, studies, participants, and biosamples. Legacy data was stored in flat CSV files with inconsistent formats, no referential integrity, and no centralised access layer. This created significant manual effort for researchers and analysts trying to extract insights.
 
 ### 1.2 Objective
 
@@ -102,7 +102,7 @@ Design and deliver an end-to-end data platform that:
 | FR-22 | The dashboard shall include a minimum of 10 chart visualisations |
 | FR-23 | All charts shall display percentage labels |
 | FR-24 | The dashboard shall support light and dark mode toggle |
-| FR-25 | The dashboard shall use the Harry Perkins Institute brand colours |
+| FR-25 | The dashboard shall use a consistent brand colour palette (purple & teal) |
 
 ### US-06 — Authentication
 | ID | Requirement |

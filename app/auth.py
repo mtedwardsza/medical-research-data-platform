@@ -41,7 +41,7 @@ auth_bp = Blueprint("auth", __name__)
 # Format: username:password pairs defined as env vars
 USERS = {
     os.getenv("ADMIN_USERNAME", "admin"): {
-        "password": os.getenv("ADMIN_PASSWORD", "perkins2026"),
+        "password": os.getenv("ADMIN_PASSWORD", "research2026"),
         "role":     "admin",
         "name":     "Platform Administrator"
     },
